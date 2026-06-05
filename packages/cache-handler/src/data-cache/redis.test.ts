@@ -208,6 +208,34 @@ describe("RedisDataCacheHandler", () => {
     expect(redis.delCalls).not.toContainEqual(["nextjs:data-cache:tagged-key"]);
   });
 
+  test("serves stale (does not purge) when a tag is revalidated with a far-future expire (fixes #32)", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(BASE_TIME);
+
+    const redis = new FakeRedis();
+    const handler = createRedisDataCacheHandler({ redis });
+
+    const entry = createEntry("max-revalidated", {
+      tags: ["article-1"],
+      expire: 600,
+      revalidate: 120,
+      timestamp: BASE_TIME.getTime(),
+    });
+    await handler.set("max-key", Promise.resolve(entry));
+
+    // revalidateTag(tag, "max") stores stale=now and a far-future expired.
+    vi.setSystemTime(new Date(BASE_TIME.getTime() + 5_000));
+    await handler.updateTags(["article-1"], { expire: 31_536_000 });
+
+    const result = await handler.get("max-key", []);
+    if (!result) {
+      throw new Error("expected entry to survive far-future expired tag");
+    }
+    expect(result.revalidate).toBe(-1);
+    expect(await readStream(result.value)).toBe("max-revalidated");
+    expect(redis.delCalls).not.toContainEqual(["nextjs:data-cache:max-key"]);
+  });
+
   test("invalidates entries immediately when tag is revalidated without durations", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(BASE_TIME);

@@ -1,6 +1,6 @@
 {
-  "name": "@mrjasonroy/cache-components-cache-handler",
-  "version": "16.1.6",
+  "name": "@hemfrid/cache-components-cache-handler",
+  "version": "16.1.7",
   "description": "Cache handler for Next.js 16+ with support for 'use cache' directive and Cache Components",
   "author": "Jason Roy",
   "license": "MIT",
@@ -15,6 +15,9 @@
     }
   },
   "files": ["dist"],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -56,11 +59,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mrjasonroy/cache-components-cache-handler.git",
+    "url": "git+https://github.com/hemfrid/cache-components-cache-handler.git",
     "directory": "packages/cache-handler"
   },
-  "homepage": "https://github.com/mrjasonroy/cache-components-cache-handler#readme",
+  "homepage": "https://github.com/hemfrid/cache-components-cache-handler#readme",
   "bugs": {
-    "url": "https://github.com/mrjasonroy/cache-components-cache-handler/issues"
+    "url": "https://github.com/hemfrid/cache-components-cache-handler/issues"
   }
 }

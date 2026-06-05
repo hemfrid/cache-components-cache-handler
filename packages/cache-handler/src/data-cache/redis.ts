@@ -225,7 +225,11 @@ export function createRedisDataCacheHandler(
 
           if (tagData.expired) {
             const expired = Number.parseInt(tagData.expired, 10);
-            if (expired > entry.timestamp) {
+            // `expired <= now` guard: without it a far-future `expired` (e.g.
+            // from revalidateTag(tag, "max")) deletes the entry on every read,
+            // making tagged caches "always fresh". Matches the memory handler.
+            // https://github.com/mrjasonroy/cache-components-cache-handler/issues/32
+            if (expired <= now && expired > entry.timestamp) {
               log?.("get", cacheKey, "had expired tag", tag);
               await redis.del(key);
               return undefined;
