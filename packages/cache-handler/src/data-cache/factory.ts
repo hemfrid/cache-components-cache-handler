@@ -105,6 +105,12 @@ export interface CacheHandlerOptions {
    * @default 100MB
    */
   maxSize?: number;
+
+  /**
+   * Extra ioredis options merged into the client (redis/valkey/elasticache).
+   * Use for connection stability, e.g. { keepAlive: 30000 }.
+   */
+  redisOptions?: import("ioredis").RedisOptions;
 }
 
 /**
@@ -143,13 +149,11 @@ export function createCacheHandler(options: CacheHandlerOptions): DataCacheHandl
       const password = options.password ?? process.env.REDIS_PASSWORD;
       const tlsEnabled = options.tls ?? false;
 
-      const redis =
-        password || tlsEnabled
-          ? new Redis(url, {
-              ...(password ? { password } : {}),
-              ...(tlsEnabled ? { tls: {} } : {}),
-            })
-          : new Redis(url);
+      const redis = new Redis(url, {
+        ...(password ? { password } : {}),
+        ...(tlsEnabled ? { tls: {} } : {}),
+        ...options.redisOptions,
+      });
       const redisAdapter = createRedisAdapter(redis);
 
       return createRedisDataCacheHandler({
@@ -189,6 +193,7 @@ export function createCacheHandler(options: CacheHandlerOptions): DataCacheHandl
           if (times > 3) return null;
           return Math.min(times * 200, 2000);
         },
+        ...options.redisOptions,
       });
 
       const redisAdapter = createRedisAdapter(redis);
